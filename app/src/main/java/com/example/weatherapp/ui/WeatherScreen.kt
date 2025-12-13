@@ -1,6 +1,7 @@
 package com.example.weatherapp.ui
 import TodayWeatherCard
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,18 +20,30 @@ import com.example.weatherapp.viewmodel.WeatherViewModel
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Icon
+import androidx.navigation.NavController
+import com.example.weatherapp.BuildConfig
 
 
 @Composable
-fun WeatherScreen(viewModel: WeatherViewModel, cityName: String) {
+fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: NavController) {
     val weatherData by viewModel.weatherData.observeAsState()
+
+    LaunchedEffect(cityName) {
+        viewModel.loadWeather(
+            location = cityName.split(",")[0], // sadece şehir adı
+            apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         // Şehir adı başlığı: ikon ile birlikte
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp),
+                .padding(vertical = 10.dp)
+                .clickable {
+                    navController.navigate("location_change_screen/$cityName")
+                },
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
@@ -70,19 +83,11 @@ fun WeatherScreen(viewModel: WeatherViewModel, cityName: String) {
                             .padding(horizontal = 16.dp, vertical = 12.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // Bugünün hava durumu
-                        item {
-                            TodayWeatherCard(day = days[0])
-                        }
-
-                        // Diğer günler
-                        items(days.drop(1)) { day ->
-                            WeatherCard(day)
-                        }
+                        item { TodayWeatherCard(day = days[0]) }
+                        items(days.drop(1)) { day -> WeatherCard(day) }
                     }
                 }
             }
         }
     }
 }
-

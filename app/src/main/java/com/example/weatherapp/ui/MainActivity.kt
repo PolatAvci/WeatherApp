@@ -1,5 +1,6 @@
 package com.example.weatherapp.ui
 
+import LocationChangeScreen
 import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -21,6 +22,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.location.LocationServices
 import android.location.Geocoder
+import androidx.navigation.compose.composable
 import java.util.Locale
 
 // MainActivity.kt içeriği
@@ -33,43 +35,34 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // ... (repository, factory, viewModel tanımları)
             val repository = WeatherRepository(RetrofitClient.api)
             val factory = WeatherViewModelFactory(repository)
             val weatherViewModel: WeatherViewModel = viewModel(factory = factory)
 
-            // 1. Şehir ismini (durumu) izlemek için, bu şehir ismini WeatherScreen'e geçirin
-            var cityName by remember { mutableStateOf("Istanbul") } // Varsayılan/Geri dönüş değeri
-            var townName by remember { mutableStateOf("") } // Varsayılan/Geri dönüş değeri
+            var cityName by remember { mutableStateOf("Istanbul") } // default şehir
+            var townName by remember { mutableStateOf("") }
 
-            val locationPermissionState = rememberPermissionState(
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
+            val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
+            val navController = androidx.navigation.compose.rememberNavController()
 
-            // AŞAMA 1: LaunchedEffect'i izin durumu değiştiğinde çalışacak şekilde güncelleyin
+            // Konum izin kontrolü ve şehir bilgisi güncelleme
             LaunchedEffect(locationPermissionState.status.isGranted) {
                 if (!locationPermissionState.status.isGranted) {
-                    // İzin yoksa iste
                     locationPermissionState.launchPermissionRequest()
                 } else {
-                    // İzin varsa konumu al ve yükle
                     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
                     fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                         location?.let {
                             val geocoder = Geocoder(this@MainActivity, Locale.getDefault())
                             val addresses = geocoder.getFromLocation(it.latitude, it.longitude, 1)
+                            cityName = addresses?.firstOrNull()?.adminArea ?: cityName
+                            townName = addresses?.firstOrNull()?.subAdminArea ?: townName
 
-                            // 2. cityName durumunu güncelle
-                            cityName = addresses?.firstOrNull()?.adminArea ?: "Istanbul"
-                            townName = addresses?.firstOrNull()?.subAdminArea ?: "Istanbul"
-
-                            // 3. Hava durumu verisini yükle
                             weatherViewModel.loadWeather(
                                 location = cityName,
                                 apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
                             )
                         } ?: run {
-                            // Konum alınamazsa varsayılan şehri yükle
                             weatherViewModel.loadWeather(
                                 location = cityName,
                                 apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
@@ -79,7 +72,35 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
-            WeatherScreen(weatherViewModel, cityName + ", " + townName)
+            WeatherAppTheme {
+                androidx.navigation.compose.NavHost(
+                    navController = navController,
+                    startDestination = "weather_screen"
+                ) {
+                    composable("weather_screen") {
+                        if(townName.isBlank()){
+                            WeatherScreen(weatherViewModel, cityName, navController)
+                        }else{
+                            WeatherScreen(weatherViewModel, "$cityName, $townName", navController)
+                        }
+                    }
+                    composable("location_change_screen/{cityName}") { backStackEntry ->
+                        val currentCity = backStackEntry.arguments?.getString("cityName") ?: cityName
+                        LocationChangeScreen(
+                            cityName = currentCity,
+                            onCitySelected = { newCity ->
+                                cityName = newCity
+                                townName = ""
+                                weatherViewModel.loadWeather(
+                                    location = cityName,
+                                    apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
+                                )
+                            },
+                            onBack = { navController.popBackStack() }
+                        )
+                    }
+                }
+            }
         }
     }
 }
