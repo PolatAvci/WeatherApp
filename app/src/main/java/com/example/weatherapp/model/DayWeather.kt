@@ -4,5 +4,6 @@ data class DayWeather(
     val datetime: String,
     val tempmax: Double,
     val tempmin: Double,
-    val conditions: String
+    val conditions: String,
+    val icon: String
 )

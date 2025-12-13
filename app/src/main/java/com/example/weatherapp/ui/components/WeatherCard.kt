@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.model.DayWeather
+import com.example.weatherapp.utils.formatDate
 import com.example.weatherapp.utils.getWeatherIcon
 
 @Composable
@@ -44,7 +45,7 @@ fun WeatherCard(day: DayWeather) {
 
                 // 🌤 ICON
                 Image(
-                    painter = painterResource(id = getWeatherIcon(day.conditions)),
+                    painter = painterResource(id = getWeatherIcon(day.icon)),
                     contentDescription = day.conditions,
                     modifier = Modifier
                         .size(72.dp)
@@ -58,7 +59,7 @@ fun WeatherCard(day: DayWeather) {
                     modifier = Modifier.weight(1f)
                 ) {
                     Text(
-                        text = day.datetime,
+                        text = formatDate(day.datetime),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
