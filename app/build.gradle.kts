@@ -94,6 +94,12 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.compose.runtime:runtime-livedata:1.6.0")
 
+    // Google Play Services Location
+    implementation("com.google.android.gms:play-services-location:21.0.1")
+
+// Accompanist Permissions (Compose için kolay izin yönetimi)
+    implementation("com.google.accompanist:accompanist-permissions:0.30.1")
+
 
     // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
