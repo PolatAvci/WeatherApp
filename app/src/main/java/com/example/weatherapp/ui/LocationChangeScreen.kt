@@ -111,7 +111,7 @@ fun LocationChangeScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(12.dp)),
-                placeholder = { Text("Şehir veya bölge ara...") },
+                placeholder = { Text("Şehir ara...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 shape = RoundedCornerShape(12.dp),
                 singleLine = true,
