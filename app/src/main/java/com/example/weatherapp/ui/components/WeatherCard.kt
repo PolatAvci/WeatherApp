@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.model.DayWeather
 import com.example.weatherapp.utils.formatDate
+import com.example.weatherapp.utils.getWeatherCondition
 import com.example.weatherapp.utils.getWeatherIcon
 
 @Composable
@@ -67,12 +68,12 @@ fun WeatherCard(day: DayWeather) {
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = day.conditions,
+                        text = getWeatherCondition(day.conditions),
                         fontSize = 15.sp,
                         color = Color.White.copy(alpha = 0.9f)
                     )
                     Row {
-                        TempChip("MAX", "${day.tempmax}°", Color(0xFFFFCDD2))
+                        TempChip("MAKS", "${day.tempmax}°", Color(0xFFFFCDD2))
                         Spacer(modifier = Modifier.width(8.dp))
                         TempChip("MIN", "${day.tempmin}°", Color(0xFFBBDEFB))
                     }
@@ -87,12 +88,12 @@ fun WeatherCard(day: DayWeather) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    item { InfoChip("Temp", "${day.temp}°") }
-                    item { InfoChip("Feels", "${day.feelslike}°") }
-                    item { InfoChip("Humidity", "${day.humidity}%") }
-                    item { InfoChip("Wind", "${day.windspeed} km/h") }
-                    item { InfoChip("Sunrise", day.sunrise) }
-                    item { InfoChip("Sunset", day.sunset) }
+                    item { InfoChip("Sıcaklık", "${day.temp}°") }
+                    item { InfoChip("Hissedilen", "${day.feelslike}°") }
+                    item { InfoChip("Nem", "${day.humidity}%") }
+                    item { InfoChip("Rüzgar", "${day.windspeed} km/h") }
+                    item { InfoChip("Gün Doğumu", day.sunrise) }
+                    item { InfoChip("Gün Batımı", day.sunset) }
                 }
             }
         }

@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.model.DayWeather
 import com.example.weatherapp.utils.formatDate
+import com.example.weatherapp.utils.getWeatherCondition
 import com.example.weatherapp.utils.getWeatherIcon
 
 @Composable
@@ -54,7 +55,7 @@ fun TodayWeatherCard(day: DayWeather) {
 
                 // Tarih ve ana durum
                 Text(
-                    text = "Today - $dateFormatted",
+                    text = "Bugün - $dateFormatted",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
@@ -66,7 +67,7 @@ fun TodayWeatherCard(day: DayWeather) {
 
                 Image(
                     painter = painterResource(id = getWeatherIcon(day.icon)),
-                    contentDescription = day.conditions,
+                    contentDescription = getWeatherCondition(day.conditions),
                     modifier = Modifier
                         .size(96.dp)
                         .clip(RoundedCornerShape(16.dp))
@@ -75,7 +76,7 @@ fun TodayWeatherCard(day: DayWeather) {
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = day.conditions,
+                    text = getWeatherCondition(day.conditions),
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Medium,
                     color = Color.White
@@ -88,10 +89,10 @@ fun TodayWeatherCard(day: DayWeather) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    item { InfoChip("Temp", "${day.temp}°") }
-                    item { InfoChip("Max", "${day.tempmax}°") }
+                    item { InfoChip("Sıcaklık", "${day.temp}°") }
+                    item { InfoChip("Maks", "${day.tempmax}°") }
                     item { InfoChip("Min", "${day.tempmin}°") }
-                    item { InfoChip("Feels", "${day.feelslike}°") }
+                    item { InfoChip("Hissedilen", "${day.feelslike}°") }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -100,8 +101,8 @@ fun TodayWeatherCard(day: DayWeather) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    item { InfoChip("Humidity", "${day.humidity}%") }
-                    item { InfoChip("Wind", "${day.windspeed} km/h") }
+                    item { InfoChip("Nem", "${day.humidity}%") }
+                    item { InfoChip("Rüzgar", "${day.windspeed} km/h") }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -110,8 +111,8 @@ fun TodayWeatherCard(day: DayWeather) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    item { InfoChip("Sunrise", day.sunrise) }
-                    item { InfoChip("Sunset", day.sunset) }
+                    item { InfoChip("Gün Doğumu", day.sunrise) }
+                    item { InfoChip("Gün Batımı", day.sunset) }
                 }
             }
         }
