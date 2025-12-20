@@ -1,4 +1,5 @@
 package com.example.weatherapp.ui
+
 import TodayWeatherCard
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,7 +11,6 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.ui.components.WeatherCard
@@ -32,7 +32,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.example.weatherapp.R
 import java.util.*
-
 
 @Composable
 fun WeatherScreen(
@@ -110,25 +109,7 @@ fun WeatherScreen(
                 )
             }
 
-            // Tarih filtreleri
-            DateFilterBar(
-                startDate = startDate,
-                endDate = endDate,
-                onStartClick = { showDatePicker { startDate = it } },
-                onEndClick = { showDatePicker { endDate = it } },
-                onFilterClick = {
-                    if (startDate.isNotBlank() && endDate.isNotBlank()) {
-                        viewModel.loadWeather(
-                            location = cityName.split(",")[0],
-                            startDate = startDate,
-                            endDate = endDate,
-                            apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
-                        )
-                    }
-                }
-            )
-
-            // Weather cards
+            // Weather cards ve filtre LazyColumn içinde
             when (weatherData) {
                 null -> {
                     Box(
@@ -147,7 +128,30 @@ fun WeatherScreen(
                                 .padding(horizontal = 16.dp, vertical = 12.dp),
                             verticalArrangement = Arrangement.spacedBy(14.dp)
                         ) {
+                            // 1️⃣ Filtre bar
+                            item {
+                                DateFilterBar(
+                                    startDate = startDate,
+                                    endDate = endDate,
+                                    onStartClick = { showDatePicker { startDate = it } },
+                                    onEndClick = { showDatePicker { endDate = it } },
+                                    onFilterClick = {
+                                        if (startDate.isNotBlank() && endDate.isNotBlank()) {
+                                            viewModel.loadWeather(
+                                                location = cityName.split(",")[0],
+                                                startDate = startDate,
+                                                endDate = endDate,
+                                                apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
+                                            )
+                                        }
+                                    }
+                                )
+                            }
+
+                            // 2️⃣ Bugünkü hava kartı
                             item { TodayWeatherCard(day = days[0]) }
+
+                            // 3️⃣ Diğer günlerin kartları
                             items(days.drop(1)) { day ->
                                 WeatherCard(day)
                             }
@@ -158,7 +162,6 @@ fun WeatherScreen(
         }
     }
 }
-
 
 @Composable
 fun DateFilterBar(
@@ -219,7 +222,7 @@ fun DateChip(
     Surface(
         modifier = modifier.clickable { onClick() },
         shape = RoundedCornerShape(18.dp),
-        color = Color(0xFF4A90E2).copy(alpha = 0.25f), // daha canlı mavi
+        color = Color(0xFF4A90E2).copy(alpha = 0.25f),
         border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
     ) {
         Column(
@@ -253,17 +256,16 @@ fun FilterButton(
             .clickable(enabled = enabled) { onClick() },
         shape = RoundedCornerShape(16.dp),
         color = if (enabled)
-            Color(0xFF4A90E2) // canlı turkuaz
+            Color(0xFF4A90E2)
         else
             Color(0xFF4FC3F7).copy(alpha = 0.4f)
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Search,
+                imageVector = Icons.Default.Search,
                 contentDescription = "Filtrele",
                 tint = Color.White
             )
         }
     }
 }
-
