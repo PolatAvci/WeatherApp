@@ -21,23 +21,31 @@ import androidx.navigation.NavController
 import com.example.weatherapp.BuildConfig
 import android.app.DatePickerDialog
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import com.example.weatherapp.R
 import java.util.*
 
 
-
 @Composable
-fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: NavController) {
+fun WeatherScreen(
+    viewModel: WeatherViewModel,
+    cityName: String,
+    navController: NavController
+) {
     val weatherData by viewModel.weatherData.observeAsState()
     val context = LocalContext.current
 
     var startDate by remember { mutableStateOf("") }
     var endDate by remember { mutableStateOf("") }
 
-    // DatePicker dialogları
     val calendar = Calendar.getInstance()
 
     fun showDatePicker(onDateSelected: (String) -> Unit) {
@@ -55,83 +63,102 @@ fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: 
         dialog.show()
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    // 🔥 ROOT CONTAINER
+    Box(modifier = Modifier.fillMaxSize()) {
 
-        // Şehir başlığı
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 10.dp)
-                .clickable {
-                    navController.navigate("location_change_screen/$cityName")
-                },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.LocationOn,
-                contentDescription = "Location",
-                tint = Color(0xFF4A90E2),
-                modifier = Modifier.size(24.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = cityName,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF4A90E2),
-                textAlign = TextAlign.Center
-            )
-        }
-
-        // Tarih filtreleri
-        DateFilterBar(
-            startDate = startDate,
-            endDate = endDate,
-            onStartClick = { showDatePicker { startDate = it } },
-            onEndClick = { showDatePicker { endDate = it } },
-            onFilterClick = {
-                if (startDate.isNotBlank() && endDate.isNotBlank()) {
-                    viewModel.loadWeather(
-                        location = cityName.split(",")[0],
-                        startDate = startDate,
-                        endDate = endDate,
-                        apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
-                    )
-                }
-            }
+        // ---- BACKGROUND IMAGE ----
+        Image(
+            painter = painterResource(id = R.drawable.bg2),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
         )
 
+        // ---- OPTIONAL DARK OVERLAY (ÖNERİLİR) ----
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.0f))
+        )
 
-        // Weather Card
-        when (weatherData) {
-            null -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator(
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+        // ---- CONTENT ----
+        Column(modifier = Modifier.fillMaxSize()) {
+
+            // Şehir başlığı
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 10.dp)
+                    .clickable {
+                        navController.navigate("location_change_screen/$cityName")
+                    },
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Location",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = cityName,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = Color.White
+                )
             }
-            else -> {
-                val days = weatherData!!.days
-                if (days.isNotEmpty()) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp, vertical = 12.dp),
-                        verticalArrangement = Arrangement.spacedBy(14.dp)
+
+            // Tarih filtreleri
+            DateFilterBar(
+                startDate = startDate,
+                endDate = endDate,
+                onStartClick = { showDatePicker { startDate = it } },
+                onEndClick = { showDatePicker { endDate = it } },
+                onFilterClick = {
+                    if (startDate.isNotBlank() && endDate.isNotBlank()) {
+                        viewModel.loadWeather(
+                            location = cityName.split(",")[0],
+                            startDate = startDate,
+                            endDate = endDate,
+                            apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
+                        )
+                    }
+                }
+            )
+
+            // Weather cards
+            when (weatherData) {
+                null -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
                     ) {
-                        item { TodayWeatherCard(day = days[0]) }
-                        items(days.drop(1)) { day -> WeatherCard(day) }
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                }
+                else -> {
+                    val days = weatherData!!.days
+                    if (days.isNotEmpty()) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp, vertical = 12.dp),
+                            verticalArrangement = Arrangement.spacedBy(14.dp)
+                        ) {
+                            item { TodayWeatherCard(day = days[0]) }
+                            items(days.drop(1)) { day ->
+                                WeatherCard(day)
+                            }
+                        }
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun DateFilterBar(
