@@ -1,5 +1,7 @@
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -27,118 +29,125 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.weatherapp.model.DayWeather
+import com.example.weatherapp.ui.components.ModernTempDisplay
 import com.example.weatherapp.utils.formatDate
 import com.example.weatherapp.utils.getWeatherCondition
 import com.example.weatherapp.utils.getWeatherIcon
 
 @Composable
 fun TodayWeatherCard(day: DayWeather) {
-    val gradient = Brush.verticalGradient(
-        colors = listOf(Color(0xFF4FC3F7), Color(0xFF0288D1))
-    )
 
-    val dateFormatted = formatDate(day.datetime)
+    val gradient = Brush.verticalGradient(
+        colors = listOf(Color(0xFF4A90E2), Color(0xFF357ABD))
+    )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(32.dp),
-        elevation = CardDefaults.cardElevation(16.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .clip(RoundedCornerShape(32.dp)),
+        elevation = CardDefaults.cardElevation(0.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Box(
+        Column(
             modifier = Modifier
                 .background(gradient)
-                .padding(24.dp)
+                .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(32.dp))
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                // Tarih ve ana durum
-                Text(
-                    text = "Bugün - $dateFormatted",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
+            // ---- HEADER ----
+            Text(
+                text = "Bugün",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.7f),
+                letterSpacing = 1.sp
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = formatDate(day.datetime),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color.White
+            )
 
-                Image(
-                    painter = painterResource(id = getWeatherIcon(day.icon)),
-                    contentDescription = getWeatherCondition(day.conditions),
-                    modifier = Modifier
-                        .size(96.dp)
-                        .clip(RoundedCornerShape(16.dp))
-                )
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
+            // ---- ICON ----
+            Image(
+                painter = painterResource(id = getWeatherIcon(day.icon)),
+                contentDescription = null,
+                modifier = Modifier.size(96.dp)
+            )
 
-                Text(
-                    text = getWeatherCondition(day.conditions),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.White
-                )
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+            // ---- CONDITION ----
+            Text(
+                text = getWeatherCondition(day.conditions),
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.White.copy(alpha = 0.9f)
+            )
 
-                // Sıcaklık bilgileri: LazyRow ile taşmaları önlüyoruz
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    item { InfoChip("Sıcaklık", "${day.temp}°") }
-                    item { InfoChip("Maks", "${day.tempmax}°") }
-                    item { InfoChip("Min", "${day.tempmin}°") }
-                    item { InfoChip("Hissedilen", "${day.feelslike}°") }
-                }
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
+            // ---- MAIN TEMP ----
+            Text(
+                text = "${day.temp.toInt()}°",
+                fontSize = 64.sp,
+                fontWeight = FontWeight.Thin,
+                color = Color.White
+            )
 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    item { InfoChip("Nem", "${day.humidity}%") }
-                    item { InfoChip("Rüzgar", "${day.windspeed} km/h") }
-                }
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
+            // ---- MAX / MIN ----
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
+                ModernTempDisplay("Max", "${day.tempmax.toInt()}°", Color(0xFFFF8A80))
+                ModernTempDisplay("Min", "${day.tempmin.toInt()}°", Color(0xFF81D4FA))
+            }
 
-                LazyRow(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    item { InfoChip("Gün Doğumu", day.sunrise) }
-                    item { InfoChip("Gün Batımı", day.sunset) }
-                }
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // ---- INFO CHIPS ----
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                item { TodayInfoItem("Hissedilen", "${day.feelslike}°") }
+                item { TodayInfoItem("Nem", "%${day.humidity}") }
+                item { TodayInfoItem("Rüzgar", "${day.windspeed} km/h") }
+                item { TodayInfoItem("Gün Doğumu", day.sunrise) }
+                item { TodayInfoItem("Gün Batımı", day.sunset) }
             }
         }
     }
 }
 
 @Composable
-fun InfoChip(label: String, value: String) {
+fun TodayInfoItem(label: String, value: String) {
     Surface(
-        shape = RoundedCornerShape(50),
-        color = Color.White.copy(alpha = 0.15f)
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White.copy(alpha = 0.12f),
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.15f))
     ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 6.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "$label: ",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 13.sp,
-                color = Color.White
+                text = label,
+                fontSize = 11.sp,
+                color = Color.White.copy(alpha = 0.7f)
             )
             Text(
                 text = value,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
                 color = Color.White
             )
         }
