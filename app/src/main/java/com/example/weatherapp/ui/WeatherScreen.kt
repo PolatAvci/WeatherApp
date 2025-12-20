@@ -20,6 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.navigation.NavController
 import com.example.weatherapp.BuildConfig
 import android.app.DatePickerDialog
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import java.util.*
 
@@ -67,7 +71,7 @@ fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: 
             Icon(
                 imageVector = androidx.compose.material.icons.Icons.Default.LocationOn,
                 contentDescription = "Location",
-                tint = MaterialTheme.colorScheme.primary,
+                tint = Color(0xFF4A90E2),
                 modifier = Modifier.size(24.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
@@ -75,25 +79,18 @@ fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: 
                 text = cityName,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.primary,
+                color = Color(0xFF4A90E2),
                 textAlign = TextAlign.Center
             )
         }
 
         // Tarih filtreleri
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            OutlinedButton(onClick = { showDatePicker { startDate = it } }) {
-                Text(if (startDate.isBlank()) "Başlangıç tarihi" else startDate)
-            }
-            OutlinedButton(onClick = { showDatePicker { endDate = it } }) {
-                Text(if (endDate.isBlank()) "Bitiş tarihi" else endDate)
-            }
-            Button(onClick = {
+        DateFilterBar(
+            startDate = startDate,
+            endDate = endDate,
+            onStartClick = { showDatePicker { startDate = it } },
+            onEndClick = { showDatePicker { endDate = it } },
+            onFilterClick = {
                 if (startDate.isNotBlank() && endDate.isNotBlank()) {
                     viewModel.loadWeather(
                         location = cityName.split(",")[0],
@@ -102,10 +99,9 @@ fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: 
                         apiKey = BuildConfig.VISUAL_CROSSING_API_KEY
                     )
                 }
-            }) {
-                Text("Filtrele")
             }
-        }
+        )
+
 
         // Weather Card
         when (weatherData) {
@@ -136,3 +132,111 @@ fun WeatherScreen(viewModel: WeatherViewModel, cityName: String, navController: 
         }
     }
 }
+
+@Composable
+fun DateFilterBar(
+    startDate: String,
+    endDate: String,
+    onStartClick: () -> Unit,
+    onEndClick: () -> Unit,
+    onFilterClick: () -> Unit
+) {
+
+    val backgroundColor = Color(0xFF357ABD)
+    val borderColor = Color.White.copy(alpha = 0.9f)
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(24.dp),
+        color = backgroundColor,
+        border = BorderStroke(1.dp, borderColor)
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+
+            DateChip(
+                label = "Başlangıç",
+                value = startDate,
+                onClick = onStartClick,
+                modifier = Modifier.weight(1f)
+            )
+
+            DateChip(
+                label = "Bitiş",
+                value = endDate,
+                onClick = onEndClick,
+                modifier = Modifier.weight(1f)
+            )
+
+            FilterButton(
+                enabled = startDate.isNotBlank() && endDate.isNotBlank(),
+                onClick = onFilterClick
+            )
+        }
+    }
+}
+
+@Composable
+fun DateChip(
+    label: String,
+    value: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Surface(
+        modifier = modifier.clickable { onClick() },
+        shape = RoundedCornerShape(18.dp),
+        color = Color(0xFF4A90E2).copy(alpha = 0.25f), // daha canlı mavi
+        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.3f))
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp)
+        ) {
+            Text(
+                text = label.uppercase(),
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White.copy(alpha = 0.8f),
+                letterSpacing = 1.sp
+            )
+            Text(
+                text = if (value.isBlank()) "Tarih seç" else value,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+        }
+    }
+}
+
+@Composable
+fun FilterButton(
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .size(48.dp)
+            .clickable(enabled = enabled) { onClick() },
+        shape = RoundedCornerShape(16.dp),
+        color = if (enabled)
+            Color(0xFF4A90E2) // canlı turkuaz
+        else
+            Color(0xFF4FC3F7).copy(alpha = 0.4f)
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Icon(
+                imageVector = androidx.compose.material.icons.Icons.Default.Search,
+                contentDescription = "Filtrele",
+                tint = Color.White
+            )
+        }
+    }
+}
+
