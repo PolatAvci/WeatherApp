@@ -1,45 +1,80 @@
+package com.example.weatherapp.ui
+
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import com.example.weatherapp.utils.LocationPrefs
+import com.google.android.gms.location.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationChangeScreen(
     cityName: String,
     onCitySelected: (String) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    context: Context
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
     val cities = listOf(
-        "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya", "Artvin", "Aydın", "Balıkesir",
-        "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur", "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli",
-        "Diyarbakır", "Edirne", "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane", "Hakkari",
-        "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu", "Kayseri", "Kırklareli", "Kırşehir",
-        "Kocaeli", "Konya", "Kütahya", "Malatya", "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir",
-        "Niğde", "Ordu", "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat", "Trabzon",
-        "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray", "Bayburt", "Karaman", "Kırıkkale",
-        "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır", "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
-    ).sorted() // Şehirleri alfabetik sıralamak kullanıcı deneyimini artırır.
+        "Konumunuz",
+        "Adana", "Adıyaman", "Afyonkarahisar", "Ağrı", "Amasya", "Ankara", "Antalya",
+        "Artvin", "Aydın", "Balıkesir", "Bilecik", "Bingöl", "Bitlis", "Bolu", "Burdur",
+        "Bursa", "Çanakkale", "Çankırı", "Çorum", "Denizli", "Diyarbakır", "Edirne",
+        "Elazığ", "Erzincan", "Erzurum", "Eskişehir", "Gaziantep", "Giresun", "Gümüşhane",
+        "Hakkari", "Hatay", "Isparta", "Mersin", "İstanbul", "İzmir", "Kars", "Kastamonu",
+        "Kayseri", "Kırklareli", "Kırşehir", "Kocaeli", "Konya", "Kütahya", "Malatya",
+        "Manisa", "Kahramanmaraş", "Mardin", "Muğla", "Muş", "Nevşehir", "Niğde", "Ordu",
+        "Rize", "Sakarya", "Samsun", "Siirt", "Sinop", "Sivas", "Tekirdağ", "Tokat",
+        "Trabzon", "Tunceli", "Şanlıurfa", "Uşak", "Van", "Yozgat", "Zonguldak", "Aksaray",
+        "Bayburt", "Karaman", "Kırıkkale", "Batman", "Şırnak", "Bartın", "Ardahan", "Iğdır",
+        "Yalova", "Karabük", "Kilis", "Osmaniye", "Düzce"
+    ).sortedBy { if (it == "Konumunuz") "" else it }
 
     val filteredCities = remember(searchQuery) {
         cities.filter { it.contains(searchQuery, ignoreCase = true) }
     }
+
+    var currentLocationCity by remember { mutableStateOf(cityName) }
+
+    // İzin launcher
+    val locationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted ->
+            if (granted) {
+                // izin verildiyse konumu al
+                getCurrentCityFromDevice(context) { city ->
+                    currentLocationCity = city
+                    LocationPrefs.saveLocation(context, city, "")
+                    onCitySelected(city)
+                    onBack()
+                }
+            }
+        }
+    )
 
     Scaffold(
         topBar = {
@@ -67,7 +102,6 @@ fun LocationChangeScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            // 📍 Mevcut Konum Kartı
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,7 +128,7 @@ fun LocationChangeScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            cityName,
+                            currentLocationCity,
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -104,7 +138,6 @@ fun LocationChangeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔍 Arama Çubuğu
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -123,26 +156,26 @@ fun LocationChangeScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🏙️ Şehir Listesi
-            if (filteredCities.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Sonuç bulunamadı.", color = MaterialTheme.colorScheme.secondary)
-                }
-            } else {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    contentPadding = PaddingValues(bottom = 16.dp)
-                ) {
-                    items(filteredCities) { city ->
-                        CityItem(
-                            cityName = city,
-                            isSelected = city == cityName,
-                            onClick = {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(filteredCities) { city ->
+                    CityItem(
+                        cityName = city,
+                        isSelected = city == currentLocationCity,
+                        onClick = {
+                            if (city == "Konumunuz") {
+                                // izin kontrolü
+                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                            } else {
+                                LocationPrefs.saveLocation(context, city, "")
+                                currentLocationCity = city
                                 onCitySelected(city)
                                 onBack()
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
@@ -180,5 +213,39 @@ fun CityItem(cityName: String, isSelected: Boolean, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+// Konum alma fonksiyonu
+fun getCurrentCityFromDevice(context: Context, onCityFound: (String) -> Unit) {
+    // İzin kontrolü
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+        != PackageManager.PERMISSION_GRANTED
+    ) {
+        onCityFound("Istanbul")
+        return
+    }
+
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+    fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+        if (location != null) {
+            try {
+                val geocoder = Geocoder(context)
+                val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                val city = addresses?.firstOrNull()?.adminArea ?: "Istanbul"
+                val townName = addresses?.firstOrNull()?.subAdminArea ?: "Merkez"
+                onCityFound(city)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                onCityFound("Istanbul")
+            }
+        } else {
+            // location null ise fallback
+            onCityFound("Istanbul")
+        }
+    }.addOnFailureListener {
+        it.printStackTrace()
+        onCityFound("Istanbul")
     }
 }
