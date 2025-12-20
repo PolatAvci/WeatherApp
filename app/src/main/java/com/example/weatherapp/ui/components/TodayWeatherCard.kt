@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -51,6 +52,7 @@ fun TodayWeatherCard(day: DayWeather) {
     ) {
         Column(
             modifier = Modifier
+                .fillMaxWidth()
                 .background(gradient)
                 .border(1.dp, Color.White.copy(alpha = 0.2f), RoundedCornerShape(32.dp))
                 .padding(24.dp),
