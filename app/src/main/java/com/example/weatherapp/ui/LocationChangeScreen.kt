@@ -29,6 +29,8 @@ import androidx.core.content.ContextCompat
 import com.example.weatherapp.utils.LocationPrefs
 import com.google.android.gms.location.*
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LocationChangeScreen(
@@ -60,12 +62,10 @@ fun LocationChangeScreen(
 
     var currentLocationCity by remember { mutableStateOf(cityName) }
 
-    // İzin launcher
     val locationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { granted ->
             if (granted) {
-                // izin verildiyse konumu al
                 getCurrentCityFromDevice(context) { city ->
                     currentLocationCity = city
                     LocationPrefs.saveLocation(context, city, "")
@@ -96,88 +96,88 @@ fun LocationChangeScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        // 🎯 LazyColumn ile tüm ekran scrollable
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                ),
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            // 1️⃣ Konum kartı
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                    ),
+                    shape = RoundedCornerShape(16.dp)
                 ) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            "Şu anki konumunuz",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.LocationOn,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                        Text(
-                            currentLocationCity,
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                "Şu anki konumunuz",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                currentLocationCity,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp)),
-                placeholder = { Text("Şehir ara...") },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true,
-                colors = TextFieldDefaults.outlinedTextFieldColors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
-                )
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                items(filteredCities) { city ->
-                    CityItem(
-                        cityName = city,
-                        isSelected = city == currentLocationCity,
-                        onClick = {
-                            if (city == "Konumunuz") {
-                                // izin kontrolü
-                                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                            } else {
-                                LocationPrefs.saveLocation(context, city, "")
-                                currentLocationCity = city
-                                onCitySelected(city)
-                                onBack()
-                            }
-                        }
+            // 2️⃣ Arama çubuğu
+            item {
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp)),
+                    placeholder = { Text("Şehir ara...") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant
                     )
-                }
+                )
             }
+
+            // 3️⃣ Şehir listesi
+            items(filteredCities) { city ->
+                CityItem(
+                    cityName = city,
+                    isSelected = city == currentLocationCity,
+                    onClick = {
+                        if (city == "Konumunuz") {
+                            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                        } else {
+                            LocationPrefs.saveLocation(context, city, "")
+                            currentLocationCity = city
+                            onCitySelected(city)
+                            onBack()
+                        }
+                    }
+                )
+            }
+
+            // 4️⃣ Alt boşluk
+            item { Spacer(modifier = Modifier.height(16.dp)) }
         }
     }
 }
