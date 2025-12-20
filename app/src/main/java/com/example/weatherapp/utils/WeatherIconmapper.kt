@@ -12,19 +12,19 @@ fun getWeatherIcon(icon: String): Int {
     val c = icon.lowercase()
 
     return when {
-        c.contains("sun") || c.contains("clear") -> R.drawable.sunny
-        c.contains("cloud") && c.contains("part") && c.contains("night") -> R.drawable.partialy_cloudy
-        c.contains("cloud") && c.contains("part") -> R.drawable.partialy_cloudy
-        c.contains("cloud") -> R.drawable.cloudy
-        c.contains("rain") && c.contains("snow") -> R.drawable.sonwy_rainy
-        c.contains("rain") -> R.drawable.rainy
-        c.contains("snow") -> R.drawable.snowy
-        c.contains("fog") || c.contains("mist") -> R.drawable.foggy
-        c.contains("wind") -> R.drawable.windy
-        c.contains("thunder") || c.contains("lightning") -> R.drawable.lightning
-        c.contains("clear") && c.contains("day") -> R.drawable.sunny
-        c.contains("clear") && c.contains("night") -> R.drawable.moon
-        else -> R.drawable.cloudy
+        c.contains("sun") || c.contains("clear") -> R.drawable.sunny_nbg
+        c.contains("cloud") && c.contains("part") && c.contains("night") -> R.drawable.partialy_cloudy_nbg
+        c.contains("cloud") && c.contains("part") -> R.drawable.partialy_cloudy_nbg
+        c.contains("cloud") -> R.drawable.cloudy_nbg
+        c.contains("rain") && c.contains("snow") -> R.drawable.sonwy_rainy_nbg
+        c.contains("rain") -> R.drawable.rainy_nbg
+        c.contains("snow") -> R.drawable.snowy_nbg
+        c.contains("fog") || c.contains("mist") -> R.drawable.foggy_nbg
+        c.contains("wind") -> R.drawable.windy_nbg
+        c.contains("thunder") || c.contains("lightning") -> R.drawable.lightning_nbg
+        c.contains("clear") && c.contains("day") -> R.drawable.sunny_nbg
+        c.contains("clear") && c.contains("night") -> R.drawable.moon_nbg
+        else -> R.drawable.cloudy_nbg
     }
 }
 
